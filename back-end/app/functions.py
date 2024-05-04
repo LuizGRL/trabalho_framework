@@ -1,17 +1,16 @@
 import re
 from datetime import datetime
-def validar_cpf(cpf):
-    cpf = re.sub("[^0-9]", "", cpf) 
+def validar_cpf(numbers):
+    cpf = [int(char) for char in numbers if char.isdigit()]
     if len(cpf) != 11:
-        return False    
-    cpf_calc = cpf[:9]
+        return False
+    if cpf == cpf[::-1]:
+        return False
     for i in range(9, 11):
-        v = sum((i+1)*int(c) for i, c in enumerate(cpf_calc)) % 11
-        if v > 9:
-            v = 0
-        if str(v) != cpf[i]:
+        value = sum((cpf[num] * ((i+1) - num) for num in range(0, i)))
+        digit = ((value * 10) % 11) % 10
+        if digit != cpf[i]:
             return False
-        cpf_calc += cpf[i]
     return True
 
 def validar_cnpj(cnpj):
@@ -75,3 +74,4 @@ def validar_data(data_str):
         return True
     except ValueError:
         return False
+    

@@ -9,7 +9,7 @@ class Customer(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     phone1 = db.Column(db.String(100))
     phone2 = db.Column(db.String(100))
-    
+
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True,autoincrement = True)
     cidade = db.Column(db.String(100), nullable=False)

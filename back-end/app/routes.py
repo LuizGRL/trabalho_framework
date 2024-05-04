@@ -3,7 +3,7 @@ from flask import request, jsonify
 from . import app, db
 from .model import Customer, Address, Item, Pedido, Pedido_Item
 
-
+#Cliente
 @app.route('/cliente/cadastro',methods=['POST'])
 def CustomerRegistration():
     data = request.get_json()
@@ -16,12 +16,17 @@ def CustomerRegistration():
     phone2 = data.get("phone2")
     
     #Validação dados
+
     if(cpf != '' and validar_cpf(cpf)==False):
         return jsonify({'message': 'Cpf em formato invalido'}), 401
     if(cnpj != '' and validar_cnpj(cnpj)==False):
         return jsonify({'message': 'Cnpj em formato invalido'}), 401
     if(cpf == '' and cnpj == ''):
         return jsonify({'message': 'Precisa informar ao menos o cpf ou um cnpj'}), 401
+    if(cpf==''):
+        cpf = None
+    if(cnpj==''):
+        cnpj = None
     if(email == '' or validar_email(email)==False):
         return jsonify({'message': 'Email nulo ou em fromato invalido'}), 401
     if(phone1 != '' and validar_numero_celular(phone1)==False):
@@ -44,6 +49,82 @@ def CustomerRegistration():
         print(str(e))
         return jsonify({'message': f'Houve um erro ao tentar adicionar no banco de dados:{str(e)}'}), 401
     
+    
+@app.route('/cliente/lista',methods=["GET"])
+def AllCustomerList():
+    customers = Customer.query.all()
+    dic_list = []
+    for customer in customers:
+        dic = {
+       "id": customer.id,
+        "name": customer.name,
+        "lastname":customer.lastname,
+        "cpf":customer.cpf,
+        "cnpj":customer.cnpj,
+        "email":customer.email,
+        "phone1":customer.phone1,
+        "phone2":customer.phone2}
+        dic_list.append(dic)
+    return jsonify(dic_list)
+
+@app.route('/cliente/<string:cpf>',methods=["GET"])
+def GetCustumerByCpf(cpf):
+    customer = Customer.query.filter_by(cpf=cpf).first()
+    dic = {
+       "id": customer.id,
+        "name": customer.name,
+        "lastname":customer.lastname,
+        "cpf":customer.cpf,
+        "cnpj":customer.cnpj,
+        "email":customer.email,
+        "phone1":customer.phone1,
+        "phone2":customer.phone2}
+    return jsonify(dic)
+
+@app.route('/cliente/<int:id>',methods=["GET"])
+def GetCustomerById(id):
+    customer = Customer.query.filter_by(id=id).first()
+    dic = {
+       "id": customer.id,
+        "name": customer.name,
+        "lastname":customer.lastname,
+        "cpf":customer.cpf,
+        "cnpj":customer.cnpj,
+        "email":customer.email,
+        "phone1":customer.phone1,
+        "phone2":customer.phone2}
+    return jsonify(dic)
+
+@app.route('/cliente/email/<string:email>',methods=["GET"])
+def GetCustomerByEmail(email):
+    customer = Customer.query.filter_by(email=email).first()
+    dic = {
+       "id": customer.id,
+        "name": customer.name,
+        "lastname":customer.lastname,
+        "cpf":customer.cpf,
+        "cnpj":customer.cnpj,
+        "email":customer.email,
+        "phone1":customer.phone1,
+        "phone2":customer.phone2}
+    return jsonify(dic)
+
+@app.route('/cliente/<int:id>',methods=["DELETE"])
+def DeleteCustomer(id):
+    try:
+        customer = Customer.query.filter_by(id=id).first()
+        db.session.delete(customer)
+        db.session.commit()
+        return jsonify({'message': "Deletado com sucesso"}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Houve um erro ao tentar remover elemento do banco dados:{str(e)}'}), 401
+
+
+
+#--------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- --------------------------------  
+    
+#Endereço    
 @app.route('/endereco/cadastro',methods=['POST'])
 def AddresRegistration():
     data = request.get_json()
@@ -87,7 +168,10 @@ def AddresRegistration():
         db.session.rollback()
         print(str(e))
         return jsonify({'message': f'Houve um erro ao tentar adicionar no banco de dados:{str(e)}'}), 401
-        
+    
+  #--------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- --------------------------------  
+
+#item
 @app.route('/item/cadastro',methods=['POST'])
 def ItemRegistration():
     data = request.get_json()
@@ -116,6 +200,10 @@ def ItemRegistration():
         print(str(e))
         return jsonify({'message': f'Houve um erro ao tentar adicionar no banco de dados:{str(e)}'}), 401
         
+        
+  #--------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- --------------------------------  
+
+#Pedido        
 @app.route('/pedido/cadastro',methods=['POST'])
 def PedidoRegistration():
     data = request.get_json()
@@ -155,5 +243,6 @@ def PedidoRegistration():
         print(str(e))
         return jsonify({'message': f'Houve um erro ao tentar adicionar no banco de dados:{str(e)}'}), 401
         
-        
+  #--------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- --------------------------------  
+       
     
