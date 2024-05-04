@@ -48,3 +48,22 @@ def validar_email(email):
         return True
     else:
         return False
+
+def validar_cep(cep):
+    padrao_cep = re.compile(r'^\d{5}-?\d{3}$')
+    if not padrao_cep.match(cep):
+        return False
+    return True
+def validar_numero(numero):
+    if isinstance(numero, int):
+        return True
+    elif isinstance(numero, str) and numero.isdigit():
+        return True
+    else:
+        return False
+def validar_float(numero):
+    try:
+        float(numero)
+        return True
+    except ValueError:
+        return False
