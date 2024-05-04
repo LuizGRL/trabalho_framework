@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 def validar_cpf(cpf):
     cpf = re.sub("[^0-9]", "", cpf) 
     if len(cpf) != 11:
@@ -64,6 +65,13 @@ def validar_numero(numero):
 def validar_float(numero):
     try:
         float(numero)
+        return True
+    except ValueError:
+        return False
+    
+def validar_data(data_str):
+    try:
+        datetime.strptime(data_str, '%d/%m/%Y %H:%M')
         return True
     except ValueError:
         return False

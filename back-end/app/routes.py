@@ -1,7 +1,7 @@
-from app.functions import validar_cnpj,validar_cpf,validar_email,validar_numero_celular,validar_cep,validar_numero,validar_float
+from app.functions import validar_cnpj,validar_cpf,validar_email,validar_numero_celular,validar_cep,validar_numero,validar_float,validar_data
 from flask import request, jsonify
 from . import app, db
-from .model import Customer, Address, Item
+from .model import Customer, Address, Item, Pedido, Pedido_Item
 
 
 @app.route('/cliente/cadastro',methods=['POST'])
@@ -44,7 +44,6 @@ def CustomerRegistration():
         print(str(e))
         return jsonify({'message': f'Houve um erro ao tentar adicionar no banco de dados:{str(e)}'}), 401
     
-
 @app.route('/endereco/cadastro',methods=['POST'])
 def AddresRegistration():
     data = request.get_json()
@@ -117,6 +116,44 @@ def ItemRegistration():
         print(str(e))
         return jsonify({'message': f'Houve um erro ao tentar adicionar no banco de dados:{str(e)}'}), 401
         
+@app.route('/pedido/cadastro',methods=['POST'])
+def PedidoRegistration():
+    data = request.get_json()
+    lista_itens = data.get("lista_itens")
+    data_entrega = data.get("data_entrega")
+    descricao = data.get("descricao")
+    cliente_id = data.get("cliente_id")
+    endereco_id = data.get("endereco_id")
+   
+  
+    #Validação dados
+    if(len(descricao)>100):
+        return jsonify({'message': 'Nome nulo ou maior que 100 caracteres'}), 401
+    if(cliente_id == '' or validar_numero(cliente_id)== False):
+        return jsonify({'message': 'id de cliente nulo ou diferente do formato'}), 401
+    if(endereco_id == '' or validar_numero(endereco_id)== False):
+        return jsonify({'message': 'id do endereço nulo ou diferente do formato'}), 401
+    if(data_entrega == '' or validar_data(data_entrega)== False):
+        return jsonify({'message': 'Data nula ou diferente do formato dd/mm/YYYY HH:MM'}), 401
+    preco_final = 0.0
+    
+    for i in lista_itens:
+        item = Item.query.get(i["id_item"])
+        preco_final += item.preco * i["quantidade_item"]
+
+    try:
+        pedido = Pedido(data=data_entrega,cliente_id=cliente_id,endereco_id=endereco_id,descricao=descricao,preco_final=preco_final)
+        db.session.add(pedido)
+        db.session.commit()
+        for i in lista_itens:
+            pedido_item = Pedido_Item(pedido_id=pedido.id,item_id = i["id_item"],quantidade = i["quantidade_item"])
+            db.session.add(pedido_item)
+            db.session.commit()
+        return jsonify({"success": True, "id": pedido.id,"mensagem":"Endereço criado com sucesso"}), 201 
+    except Exception as e:
+        db.session.rollback()
+        print(str(e))
+        return jsonify({'message': f'Houve um erro ao tentar adicionar no banco de dados:{str(e)}'}), 401
         
         
     
