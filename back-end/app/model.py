@@ -41,10 +41,12 @@ class Pedido(db.Model):
     cliente_id =   db.Column(db.Integer, nullable= False)
     endereco_id =  db.Column(db.Integer, nullable= False)
     descricao = db.Column(db.String(100))
+    children = relationship("Pedido_Item", cascade="all, delete", backref="pedido")
+
 
 class Pedido_Item(db.Model):
     __tablename__ = 'pedido_item'
-    pedido_id = db.Column(db.Integer, db.ForeignKey('pedido.id'), primary_key=True)
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
+    pedido_id = db.Column(db.Integer, db.ForeignKey('pedido.id'),primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'),primary_key=True)
     quantidade = db.Column(db.Integer, nullable=False)
 

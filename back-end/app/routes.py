@@ -293,8 +293,7 @@ def ItemRegistration():
         db.session.rollback()
         print(str(e))
         return jsonify({'message': f'Houve um erro ao tentar adicionar no banco de dados:{str(e)}'}), 401
-    
-    
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 @app.route('/item/lista',methods=["GET"])
 def GetAllItens():  
     itens = Item.query.all()
@@ -317,7 +316,7 @@ def GetItemById(id):
     "descricao": item.descricao,
     "codigo" :item.codigo} 
     return jsonify(dic_item)
-
+                    
 @app.route('/item/codigo/<string:code>',methods=["GET"])
 def GetItemByCode(code):  
     item = Item.query.filter_by(codigo=code).first()
@@ -352,7 +351,7 @@ def PedidoRegistration():
     cliente_id = data.get("cliente_id")
     endereco_id = data.get("endereco_id")
    
-  
+
     #Validação dados
     if(len(descricao)>100):
         return jsonify({'message': 'Nome nulo ou maior que 100 caracteres'}), 401
@@ -376,11 +375,177 @@ def PedidoRegistration():
             pedido_item = Pedido_Item(pedido_id=pedido.id,item_id = i["id_item"],quantidade = i["quantidade_item"])
             db.session.add(pedido_item)
             db.session.commit()
-        return jsonify({"success": True, "id": pedido.id,"mensagem":"Endereço criado com sucesso"}), 201 
+        return jsonify({"success": True, "id": pedido.id,"mensagem":"Pedido criado com sucesso"}), 201 
     except Exception as e:
         db.session.rollback()
         print(str(e))
         return jsonify({'message': f'Houve um erro ao tentar adicionar no banco de dados:{str(e)}'}), 401
+        
+@app.route('/pedido/lista',methods=["GET"])
+def GetAllPedidos():  
+    pedidos = Pedido.query.all()
+    dic_list = []
+
+    for pedido in pedidos:
+        customer = Customer.query.filter_by(id=pedido.cliente_id).first()
+        address = Address.query.filter_by(id=pedido.endereco_id).first()
+        dic_customer = {
+        "id": customer.id,
+        "name": customer.name,
+        "lastname":customer.lastname,
+        "cpf":customer.cpf,
+        "cnpj":customer.cnpj,
+        "email":customer.email,
+        "phone1":customer.phone1,
+        "phone2":customer.phone2} 
+        
+        dic_endereco = {
+        "id_endereco":address.id,
+        "cidade" : address.cidade,
+        "estado" : address.estado,
+        "rua" : address.rua,
+        "numero": address.numero,
+        "quadra" : address.quadra,
+        "lote" : address.lote,
+        "cep" : address.cep,
+        "descricao" :address.descricao,
+        "referencia" : address.referencia}
+        
+        itens_pedido = Pedido_Item.query.filter_by(pedido_id=pedido.id).all()
+        lista_itens = []
+        for item_pedido in itens_pedido:
+            item = Item.query.filter(Item.id == item_pedido.item_id).first()
+            dic_item = {
+            "nome":item.nome,
+            "preco": item.preco,
+            "descricao": item.descricao,
+            "codigo" :item.codigo} 
+            lista_itens.append(dic_item)
+            
+        dic_pedido = {
+        "pedido_id": pedido.id,
+        "preco_final": pedido.preco_final,
+        "data_entrega": pedido.data,
+        "descricao": pedido.descricao,
+        "cliente_id" : dic_customer,
+        "endereco_id": dic_endereco,
+        "itens": lista_itens}
+        dic_list.append(dic_pedido)
+    return jsonify(dic_list)
+
+@app.route('/pedido/<int:id>',methods=["GET"])
+def GetPedidoById(id):  
+    pedido = Pedido.query.filter_by(id=id).first()
+    dic_list = []
+    customer = Customer.query.filter_by(id=pedido.cliente_id).first()
+    address = Address.query.filter_by(id=pedido.endereco_id).first()
+    dic_customer = {
+    "id": customer.id,
+    "name": customer.name,
+    "lastname":customer.lastname,
+    "cpf":customer.cpf,
+    "cnpj":customer.cnpj,
+    "email":customer.email,
+    "phone1":customer.phone1,
+    "phone2":customer.phone2} 
+        
+    dic_endereco = {
+    "id_endereco":address.id,
+    "cidade" : address.cidade,
+    "estado" : address.estado,
+    "rua" : address.rua,
+    "numero": address.numero,
+    "quadra" : address.quadra,
+    "lote" : address.lote,
+    "cep" : address.cep,
+    "descricao" :address.descricao,
+    "referencia" : address.referencia}
+        
+    itens_pedido = Pedido_Item.query.filter_by(pedido_id=pedido.id).all()
+    lista_itens = []
+    for item_pedido in itens_pedido:
+        item = Item.query.filter(Item.id == item_pedido.item_id).first()
+        dic_item = {
+        "nome":item.nome,
+        "preco": item.preco,
+        "descricao": item.descricao,
+        "codigo" :item.codigo} 
+        lista_itens.append(dic_item)
+        
+    dic_pedido = {
+    "pedido_id": pedido.id,
+    "preco_final": pedido.preco_final,
+    "data_entrega": pedido.data,
+    "descricao": pedido.descricao,
+    "cliente_id" : dic_customer,
+    "endereco_id": dic_endereco,
+    "itens": lista_itens}
+    dic_list.append(dic_pedido)
+    return jsonify(dic_list)
+                    
+@app.route('/pedido/cliente/<int:id>',methods=["GET"])
+def GetAllPedidosByCustomerId(id):  
+    pedidos = Pedido.query.filter_by(cliente_id=id).all()
+    dic_list = []
+    for pedido in pedidos:
+        customer = Customer.query.filter_by(id=pedido.cliente_id).first()
+        address = Address.query.filter_by(id=pedido.endereco_id).first()
+        dic_customer = {
+        "id": customer.id,
+        "name": customer.name,
+        "lastname":customer.lastname,
+        "cpf":customer.cpf,
+        "cnpj":customer.cnpj,
+        "email":customer.email,
+        "phone1":customer.phone1,
+        "phone2":customer.phone2} 
+            
+        dic_endereco = {
+        "id_endereco":address.id,
+        "cidade" : address.cidade,
+        "estado" : address.estado,
+        "rua" : address.rua,
+        "numero": address.numero,
+        "quadra" : address.quadra,
+        "lote" : address.lote,
+        "cep" : address.cep,
+        "descricao" :address.descricao,
+        "referencia" : address.referencia}
+            
+        itens_pedido = Pedido_Item.query.filter(Pedido_Item.pedido_id == pedido.id ).all()
+        lista_itens = []
+        for item_pedido in itens_pedido:
+            item = Item.query.filter(Item.id == item_pedido.item_id).first()
+            dic_item = {
+            "nome":item.nome,
+            "preco": item.preco,
+            "descricao": item.descricao,
+            "codigo" :item.codigo} 
+            lista_itens.append(dic_item)
+                
+        dic_pedido = {
+        "pedido_id": pedido.id,
+        "preco_final": pedido.preco_final,
+        "data_entrega": pedido.data,
+        "descricao": pedido.descricao,
+        "cliente_id" : dic_customer,
+        "endereco_id": dic_endereco,
+        "itens": lista_itens}
+        dic_list.append(dic_pedido)
+    return jsonify(dic_list)
+
+
+@app.route('/pedido/<int:id>',methods=["DELETE"])
+def DeletePedido(id):
+    try:
+        pedido = Pedido.query.filter_by(id=id).first()
+        db.session.delete(pedido)
+        db.session.commit()
+        return jsonify({'message': "Deletado com sucesso"}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Houve um erro ao tentar remover elemento do banco dados:{str(e)}'}), 401        
+        
         
   #--------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- --------------------------------  
        
