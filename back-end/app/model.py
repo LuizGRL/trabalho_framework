@@ -1,4 +1,5 @@
-from . import db  # Importa a instância de SQLAlchemy do pacote
+from . import db  
+from sqlalchemy.orm import relationship
 
 class Customer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,6 +30,8 @@ class Item(db.Model):
     descricao = db.Column(db.String(100))
     preco = db.Column(db.Float, nullable=False)
     codigo = db.Column(db.String(100), nullable=False,unique = True)
+    children = relationship("Pedido_Item", cascade="all, delete", backref="parent")
+
 
 
 class Pedido(db.Model):
@@ -42,6 +45,6 @@ class Pedido(db.Model):
 class Pedido_Item(db.Model):
     __tablename__ = 'pedido_item'
     pedido_id = db.Column(db.Integer, db.ForeignKey('pedido.id'), primary_key=True)
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
     quantidade = db.Column(db.Integer, nullable=False)
 

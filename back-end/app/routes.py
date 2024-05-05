@@ -293,6 +293,51 @@ def ItemRegistration():
         db.session.rollback()
         print(str(e))
         return jsonify({'message': f'Houve um erro ao tentar adicionar no banco de dados:{str(e)}'}), 401
+    
+    
+@app.route('/item/lista',methods=["GET"])
+def GetAllItens():  
+    itens = Item.query.all()
+    dic_list = []
+    for item in itens:
+        dic_item = {
+        "nome":item.nome,
+        "preco": item.preco,
+        "descricao": item.descricao,
+        "codigo" :item.codigo} 
+        dic_list.append(dic_item)
+    return jsonify(dic_list)
+
+@app.route('/item/<int:id>',methods=["GET"])
+def GetItemById(id):  
+    item = Item.query.filter_by(id=id).first()
+    dic_item = {
+    "nome":item.nome,
+    "preco": item.preco,
+    "descricao": item.descricao,
+    "codigo" :item.codigo} 
+    return jsonify(dic_item)
+
+@app.route('/item/codigo/<string:code>',methods=["GET"])
+def GetItemByCode(code):  
+    item = Item.query.filter_by(codigo=code).first()
+    dic_item = {
+    "nome":item.nome,
+    "preco": item.preco,
+    "descricao": item.descricao,
+    "codigo" :item.codigo} 
+    return jsonify(dic_item)
+
+@app.route('/item/<int:id>',methods=["DELETE"])
+def DeleteItem(id):
+    try:
+        item = Item.query.filter_by(id=id).first()
+        db.session.delete(item)
+        db.session.commit()
+        return jsonify({'message': "Deletado com sucesso"}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Houve um erro ao tentar remover elemento do banco dados:{str(e)}'}), 401
         
         
   #--------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- --------------------------------  
