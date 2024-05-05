@@ -16,7 +16,6 @@ def CustomerRegistration():
     phone2 = data.get("phone2")
     
     #Validação dados
-
     if(cpf != '' and validar_cpf(cpf)==False):
         return jsonify({'message': 'Cpf em formato invalido'}), 401
     if(cnpj != '' and validar_cnpj(cnpj)==False):
@@ -120,8 +119,6 @@ def DeleteCustomer(id):
         db.session.rollback()
         return jsonify({'message': f'Houve um erro ao tentar remover elemento do banco dados:{str(e)}'}), 401
 
-
-
 #--------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- --------------------------------  
     
 #Endereço    
@@ -168,6 +165,103 @@ def AddresRegistration():
         db.session.rollback()
         print(str(e))
         return jsonify({'message': f'Houve um erro ao tentar adicionar no banco de dados:{str(e)}'}), 401
+
+@app.route('/endereco/lista',methods=["GET"])
+def GetAllAddress():  
+    addresses = Address.query.all()
+    dic_list = []
+    for address in addresses:
+        customer = Customer.query.filter_by(id=address.cliente_id).first()
+        dic_customer = {
+        "id": customer.id,
+        "name": customer.name,
+        "lastname":customer.lastname,
+        "cpf":customer.cpf,
+        "cnpj":customer.cnpj,
+        "email":customer.email,
+        "phone1":customer.phone1,
+        "phone2":customer.phone2} 
+        dic_endereco = {
+        "id_cidade":address.id,
+        "cidade" : address.cidade,
+        "estado" : address.estado,
+        "rua" : address.rua,
+        "numero": address.numero,
+        "quadra" : address.quadra,
+        "lote" : address.lote,
+        "cep" : address.cep,
+        "descricao" :address.descricao,
+        "referencia" : address.referencia,
+        "cliente" : dic_customer}
+        dic_list.append(dic_endereco)
+    return jsonify(dic_list)
+
+@app.route('/endereco/<int:id>',methods=["GET"])
+def GetAddressById(id):  
+    address = Address.query.filter_by(id=id).first()
+    customer = Customer.query.filter_by(id=address.cliente_id).first()
+    dic_customer = {
+    "id": customer.id,
+    "name": customer.name,
+    "lastname":customer.lastname,
+    "cpf":customer.cpf,
+    "cnpj":customer.cnpj,
+    "email":customer.email,
+    "phone1":customer.phone1,
+    "phone2":customer.phone2} 
+    dic_endereco = {
+    "id_cidade":address.id,
+    "cidade" : address.cidade,
+    "estado" : address.estado,
+    "rua" : address.rua,
+    "numero": address.numero,
+    "quadra" : address.quadra,
+    "lote" : address.lote,
+    "cep" : address.cep,
+    "descricao" :address.descricao,
+    "referencia" : address.referencia,
+    "cliente" : dic_customer}
+    return jsonify(dic_endereco)
+
+@app.route('/endereco/cliente/<int:id>',methods=["GET"])
+def GetAddressByClienteId(id):  
+    address = Address.query.filter_by(cliente_id=id).first()
+    customer = Customer.query.filter_by(id=id).first()
+    dic_customer = {
+    "id": customer.id,
+    "name": customer.name,
+    "lastname":customer.lastname,
+    "cpf":customer.cpf,
+    "cnpj":customer.cnpj,
+    "email":customer.email,
+    "phone1":customer.phone1,
+    "phone2":customer.phone2} 
+    dic_endereco = {
+    "id_cidade":address.id,
+    "cidade" : address.cidade,
+    "estado" : address.estado,
+    "rua" : address.rua,
+    "numero": address.numero,
+    "quadra" : address.quadra,
+    "lote" : address.lote,
+    "cep" : address.cep,
+    "descricao" :address.descricao,
+    "referencia" : address.referencia,
+    "cliente" : dic_customer}
+    return jsonify(dic_endereco)
+
+
+@app.route('/endereco/<int:id>',methods=["DELETE"])
+def DeleteAddress(id):
+    try:
+        address = Address.query.filter_by(id=id).first()
+        db.session.delete(address)
+        db.session.commit()
+        return jsonify({'message': "Deletado com sucesso"}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Houve um erro ao tentar remover elemento do banco dados:{str(e)}'}), 401
+
     
   #--------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- -------------------------------- --------------------------------  
 
